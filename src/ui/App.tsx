@@ -14,6 +14,8 @@ import { subscribeMixerSync } from "@/audio/tracks/trackGraph";
 import { installClipScheduler } from "@/audio/clipScheduler";
 import { ensureAllInstruments } from "@/audio/instruments/hosting";
 import { subscribeDeviceSync } from "@/audio/devices/chain";
+import { startAutosave, loadLatestProject } from "@/storage/autosave";
+import { loadSampleMetadata } from "@/storage/opfs";
 import s from "./App.module.css";
 
 export function App() {
@@ -21,6 +23,9 @@ export function App() {
   const bottomVisible = useUiStore((st) => st.bottomVisible);
 
   useEffect(() => {
+    void loadSampleMetadata();
+    void loadLatestProject();
+    const stopAutosave = startAutosave();
     let stop: (() => void) | null = null;
     let stopMetronome: (() => void) | null = null;
     const stopMixer = subscribeMixerSync();
@@ -47,6 +52,7 @@ export function App() {
       stopMixer();
       stopDevices();
       stopClipScheduler?.();
+      stopAutosave();
     };
   }, []);
 

@@ -1,6 +1,18 @@
 import { engine } from "@/audio/engine";
+import { putSampleMeta, getAllSampleMeta } from "./indexeddb";
 
 const SAMPLE_DIR = "samples";
+
+export async function loadSampleMetadata(): Promise<void> {
+  try {
+    const all = await getAllSampleMeta();
+    for (const m of all) {
+      metaCache.set(m.id, { name: m.name, size: m.size, duration: m.duration, type: m.type });
+    }
+  } catch {
+    /* noop */
+  }
+}
 
 interface NavStorage {
   getDirectory?: () => Promise<FileSystemDirectoryHandle>;
@@ -56,13 +68,18 @@ export async function putSample(file: Blob, originalName: string): Promise<strin
   if (!engine.ctx) await engine.init();
   const buf = await engine.ctx!.decodeAudioData(await file.arrayBuffer());
   decodedCache.set(id, buf);
-  metaCache.set(id, {
+  const meta = {
     name: originalName,
     size: file.size,
     duration: buf.duration,
     type: file.type || "audio/wav",
-  });
-  // persist meta in IndexedDB later (S18)
+  };
+  metaCache.set(id, meta);
+  try {
+    await putSampleMeta(id, meta);
+  } catch {
+    /* noop */
+  }
   return id;
 }
 
