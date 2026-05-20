@@ -8,6 +8,8 @@ import { useUiStore } from "@/state/uiStore";
 import { useTransportStore } from "@/state/transportStore";
 import { engine } from "@/audio/engine";
 import { startTransportClock, stopTransportClock } from "@/audio/transport";
+import { startScheduler, stopScheduler, resyncSchedule } from "@/audio/scheduler";
+import { installMetronome } from "@/audio/metronome";
 import s from "./App.module.css";
 
 export function App() {
@@ -16,13 +18,23 @@ export function App() {
 
   useEffect(() => {
     let stop: (() => void) | null = null;
+    let stopMetronome: (() => void) | null = null;
     const unsub = engine.onReady(() => {
       stop = startTransportClock();
+      stopMetronome = installMetronome();
+      startScheduler();
+    });
+    const unsubTransport = useTransportStore.subscribe((state, prev) => {
+      if (state.isPlaying && !prev.isPlaying) resyncSchedule();
+      if (!state.isPlaying && prev.isPlaying) resyncSchedule();
     });
     return () => {
       unsub();
+      unsubTransport();
       if (stop) stop();
       else stopTransportClock();
+      stopMetronome?.();
+      stopScheduler();
     };
   }, []);
 
