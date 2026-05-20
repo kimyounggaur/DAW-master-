@@ -2,8 +2,10 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
 
+const repoName = process.env.GITHUB_REPOSITORY?.split("/").pop() ?? "DAW-master-";
+
 export default defineConfig(({ command }) => ({
-  base: command === "build" ? "/Simple_Score-master-/" : "/",
+  base: command === "build" ? `/${repoName}/` : "/",
   plugins: [react()],
   resolve: {
     alias: {
