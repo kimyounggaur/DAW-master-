@@ -7,11 +7,24 @@ import { MainArea } from "./layout/MainArea";
 import { useUiStore } from "@/state/uiStore";
 import { useTransportStore } from "@/state/transportStore";
 import { engine } from "@/audio/engine";
+import { startTransportClock, stopTransportClock } from "@/audio/transport";
 import s from "./App.module.css";
 
 export function App() {
   const toast = useUiStore((st) => st.toast);
   const bottomVisible = useUiStore((st) => st.bottomVisible);
+
+  useEffect(() => {
+    let stop: (() => void) | null = null;
+    const unsub = engine.onReady(() => {
+      stop = startTransportClock();
+    });
+    return () => {
+      unsub();
+      if (stop) stop();
+      else stopTransportClock();
+    };
+  }, []);
 
   useEffect(() => {
     const onKey = async (e: KeyboardEvent) => {
