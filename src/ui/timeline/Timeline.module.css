@@ -1,0 +1,85 @@
+.root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  touch-action: none;
+}
+.addTrack {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  z-index: 5;
+  display: flex;
+  gap: 4px;
+}
+.addBtn {
+  background: var(--bg-2);
+  color: var(--fg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.addBtn:hover {
+  color: var(--fg-0);
+  background: var(--bg-3);
+}
+.demoBtn {
+  background: var(--bg-2);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.scrollY {
+  position: absolute;
+  top: 24px;
+  right: 0;
+  bottom: 0;
+  width: 10px;
+  background: transparent;
+  z-index: 4;
+}
+.scrollX {
+  position: absolute;
+  left: 200px;
+  right: 0;
+  bottom: 0;
+  height: 10px;
+  background: transparent;
+  z-index: 4;
+}
+
+.contextMenu {
+  position: fixed;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 0;
+  font-size: 12px;
+  z-index: 1000;
+  min-width: 120px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+.contextMenuItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  color: var(--fg-0);
+  cursor: pointer;
+}
+.contextMenuItem:hover {
+  background: var(--bg-3);
+}
+.contextMenuItem.danger {
+  color: var(--danger);
+}

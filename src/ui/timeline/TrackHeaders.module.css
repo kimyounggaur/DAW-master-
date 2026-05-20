@@ -1,0 +1,102 @@
+.layer {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  width: 200px;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.row {
+  position: absolute;
+  left: 0;
+  width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  pointer-events: auto;
+}
+.color {
+  width: 4px;
+  align-self: stretch;
+  margin: 4px 0;
+  border-radius: 2px;
+}
+.name {
+  flex: 1;
+  font-size: 12px;
+  color: var(--fg-0);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 2px 4px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.name:hover,
+.name:focus {
+  border-color: var(--border);
+  background: var(--bg-2);
+}
+.controls {
+  display: flex;
+  gap: 2px;
+}
+.btn {
+  font-size: 9px;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--fg-1);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.btn.muted {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+.btn.soloed {
+  background: var(--accent-2);
+  color: #000;
+  border-color: var(--accent-2);
+}
+.btn.armed {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.faderWrap {
+  width: 36px;
+  display: flex;
+  align-items: center;
+}
+.fader {
+  width: 100%;
+  appearance: none;
+  background: var(--bg-2);
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+}
+.fader::-webkit-slider-thumb {
+  appearance: none;
+  width: 10px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.panWrap {
+  display: flex;
+  align-items: center;
+  font-size: 9px;
+  color: var(--fg-2);
+}
+.pan {
+  width: 28px;
+  margin-left: 2px;
+}

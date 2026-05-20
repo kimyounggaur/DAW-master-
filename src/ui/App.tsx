@@ -10,6 +10,7 @@ import { engine } from "@/audio/engine";
 import { startTransportClock, stopTransportClock } from "@/audio/transport";
 import { startScheduler, stopScheduler, resyncSchedule } from "@/audio/scheduler";
 import { installMetronome } from "@/audio/metronome";
+import { subscribeMixerSync } from "@/audio/tracks/trackGraph";
 import s from "./App.module.css";
 
 export function App() {
@@ -19,6 +20,7 @@ export function App() {
   useEffect(() => {
     let stop: (() => void) | null = null;
     let stopMetronome: (() => void) | null = null;
+    const stopMixer = subscribeMixerSync();
     const unsub = engine.onReady(() => {
       stop = startTransportClock();
       stopMetronome = installMetronome();
@@ -35,6 +37,7 @@ export function App() {
       else stopTransportClock();
       stopMetronome?.();
       stopScheduler();
+      stopMixer();
     };
   }, []);
 
