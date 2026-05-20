@@ -1,0 +1,104 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.header {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--fg-2);
+  background: var(--bg-2);
+}
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+  font-size: 12px;
+}
+.placeholder {
+  color: var(--fg-2);
+  text-align: center;
+  padding: var(--space-4);
+}
+.row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px 0;
+}
+.row label {
+  color: var(--fg-1);
+  font-size: 11px;
+}
+.section {
+  margin-top: var(--space-3);
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--fg-2);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+  margin-bottom: var(--space-2);
+}
+.card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+.cardHeader .title {
+  font-weight: 600;
+}
+.cardActions {
+  display: flex;
+  gap: 4px;
+}
+.iconBtn {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--fg-1);
+}
+.iconBtn:hover {
+  color: var(--fg-0);
+  background: var(--bg-3);
+}
+.iconBtn.active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.knobs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+.deviceAdd {
+  width: 100%;
+  text-align: center;
+  padding: 8px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--fg-1);
+  background: transparent;
+  cursor: pointer;
+}
+.deviceAdd:hover {
+  border-color: var(--accent);
+  color: var(--fg-0);
+}
