@@ -21,7 +21,7 @@ function indicator(state: "idle" | "saving" | "saved" | "error") {
 }
 
 async function performSave() {
-  const project = useProjectStore.getState().project;
+  const project = structuredClone(useProjectStore.getState().project);
   try {
     indicator("saving");
     project.meta.updatedAt = Date.now();

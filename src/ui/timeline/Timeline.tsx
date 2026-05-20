@@ -100,7 +100,7 @@ export function Timeline() {
     const project = useProjectStore.getState().project;
     const clip = project.clips[clipId];
     if (clip && clip.type === "pattern") {
-      const steps = clip.steps.map((row) => row.slice());
+      const steps = clip.steps.map((row) => row.map((cell) => ({ ...cell })));
       const kick = steps[0];
       const snare = steps[1];
       const hh = steps[2];

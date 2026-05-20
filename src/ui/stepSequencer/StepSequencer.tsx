@@ -34,7 +34,7 @@ export function StepSequencer({ clipId }: Props) {
   if (!clip || clip.type !== "pattern") return null;
 
   const toggleStep = (row: number, step: number) => {
-    const steps = clip.steps.map((r) => r.slice());
+    const steps = clip.steps.map((r) => r.map((cell) => ({ ...cell })));
     const cell = steps[row]?.[step];
     if (!cell) return;
     cell.on = !cell.on;
@@ -43,7 +43,7 @@ export function StepSequencer({ clipId }: Props) {
   };
 
   const setVelocity = (row: number, step: number, v: number) => {
-    const steps = clip.steps.map((r) => r.slice());
+    const steps = clip.steps.map((r) => r.map((cell) => ({ ...cell })));
     const cell = steps[row]?.[step];
     if (!cell) return;
     cell.velocity = Math.max(0.05, Math.min(1, v));
