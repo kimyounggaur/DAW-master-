@@ -17,6 +17,8 @@ import { ensureAllInstruments } from "@/audio/instruments/hosting";
 import { subscribeDeviceSync } from "@/audio/devices/chain";
 import { startAutosave, loadLatestProject } from "@/storage/autosave";
 import { loadSampleMetadata } from "@/storage/opfs";
+import { useHistoryStore } from "@/state/historyStore";
+import { useProjectStore } from "@/state/projectStore";
 import s from "./App.module.css";
 
 export function App() {
@@ -67,9 +69,50 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    let last = JSON.stringify(useProjectStore.getState().project);
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const unsub = useProjectStore.subscribe(() => {
+      if (!useHistoryStore.getState().recording) return;
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        const cur = JSON.stringify(useProjectStore.getState().project);
+        if (cur === last) return;
+        // Save the previous state so undo restores it
+        useHistoryStore.setState((s) => {
+          const undoStack = s.undoStack.slice();
+          undoStack.push({
+            project: JSON.parse(last),
+            label: "edit",
+            ts: Date.now(),
+          });
+          while (undoStack.length > 200) undoStack.shift();
+          return { undoStack, redoStack: [] };
+        });
+        last = cur;
+      }, 400);
+    });
+    return () => {
+      unsub();
+      if (timer) clearTimeout(timer);
+    };
+  }, []);
+
+  useEffect(() => {
     const onKey = async (e: KeyboardEvent) => {
       const tgt = e.target;
       if (tgt instanceof HTMLInputElement || tgt instanceof HTMLTextAreaElement) return;
+      const isCmd = e.ctrlKey || e.metaKey;
+      if (isCmd && (e.key === "z" || e.key === "Z")) {
+        e.preventDefault();
+        if (e.shiftKey) useHistoryStore.getState().redo();
+        else useHistoryStore.getState().undo();
+        return;
+      }
+      if (isCmd && (e.key === "y" || e.key === "Y")) {
+        e.preventDefault();
+        useHistoryStore.getState().redo();
+        return;
+      }
       if (e.code === "Space") {
         e.preventDefault();
         const t = useTransportStore.getState();
