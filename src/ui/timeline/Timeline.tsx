@@ -6,6 +6,10 @@ import { TimelineCanvas } from "./TimelineCanvas";
 import { HEADER_W } from "./timelineGeom";
 import { attachClipDragHandler } from "./ClipDragHandler";
 import { TrackHeaders } from "./TrackHeaders";
+import { putSample, getDecodedSample } from "@/storage/opfs";
+import { preloadPeaks } from "@/storage/peakCache";
+import { engine } from "@/audio/engine";
+import { secondsToBeats } from "@/model/time";
 import s from "./Timeline.module.css";
 
 export function Timeline() {
@@ -120,12 +124,72 @@ export function Timeline() {
     useUiStore.getState().selectTrack(id);
   };
 
+  const onDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (!e.dataTransfer.files.length) return;
+    await engine.init();
+    const project = useProjectStore.getState().project;
+    const ui = useUiStore.getState();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const beatRaw = Math.max(0, (x - 200 + ui.scrollX) / ui.zoomX);
+    const beat = Math.round(beatRaw / 0.25) * 0.25;
+
+    let dropTrackId: string | null = null;
+    const tc = tcRef.current;
+    if (tc) {
+      const hit = tc.hitTest(x, y);
+      if (hit.kind === "track-header") dropTrackId = hit.trackId;
+      else if (hit.kind === "empty" && hit.trackId) dropTrackId = hit.trackId;
+      else if (hit.kind === "clip") {
+        const c = project.clips[hit.clipId];
+        if (c) dropTrackId = c.trackId;
+      }
+    }
+    const targetTrack =
+      (dropTrackId && project.tracks.find((t) => t.id === dropTrackId && t.type === "audio")) ||
+      project.tracks.find((t) => t.type === "audio");
+    let audioTrackId: string;
+    if (targetTrack) {
+      audioTrackId = targetTrack.id;
+    } else {
+      audioTrackId = useProjectStore.getState().addTrack("audio");
+    }
+
+    for (const file of Array.from(e.dataTransfer.files)) {
+      try {
+        const sampleId = await putSample(file, file.name);
+        const buf = await getDecodedSample(sampleId);
+        if (!buf) continue;
+        const lengthBeats = secondsToBeats(buf.duration, project.meta.bpm);
+        const clipId = useProjectStore.getState().addClip(audioTrackId, "audio", beat, lengthBeats, {
+          name: file.name.replace(/\.[^/.]+$/, ""),
+          sampleId,
+        });
+        void preloadPeaks(sampleId);
+        useUiStore.getState().selectClip(clipId);
+        useUiStore.getState().showToast(`임포트 완료: ${file.name} (${buf.duration.toFixed(2)}s)`, "success");
+      } catch {
+        useUiStore.getState().showToast(`임포트 실패: ${file.name}`, "error");
+      }
+    }
+  };
+
+  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    if (e.dataTransfer.types.includes("Files")) e.preventDefault();
+  };
+
   return (
     <div
       ref={containerRef}
       className={s.root}
       onWheel={onWheel}
       onClick={() => setCtxMenu(null)}
+      onDrop={onDrop}
+      onDragOver={onDragOver}
     >
       <canvas ref={canvasRef} className={s.canvas} />
       <TrackHeaders />

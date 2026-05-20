@@ -3,7 +3,9 @@ import type { Clip } from "@/model/clip";
 import type { Track } from "@/model/track";
 import { setupHiDPI, clear, strokeLineV, strokeLineH, readCssVar } from "@/lib/canvas";
 import { buildLayout, HEADER_W, RULER_H, beatToX, xToBeat, getTrackAtY } from "./timelineGeom";
-import { beatsToBarPos } from "@/model/time";
+import { beatsToBarPos, beatsToSeconds } from "@/model/time";
+import { getPeaksSync, getPeaks, onPeaksReady } from "@/storage/peakCache";
+import { pickLevel } from "@/audio/render/peaks";
 
 export interface TimelineDeps {
   getProject: () => Project;
@@ -34,12 +36,15 @@ export class TimelineCanvas {
   private cssH = 0;
   private rafId: number | null = null;
 
+  private unsubPeaks: (() => void) | null = null;
+
   constructor(
     private canvas: HTMLCanvasElement,
     private deps: TimelineDeps,
   ) {
     this.ctx = canvas.getContext("2d")!;
     this.resize();
+    this.unsubPeaks = onPeaksReady(() => this.invalidate());
     this.loop();
   }
 
@@ -60,6 +65,8 @@ export class TimelineCanvas {
   destroy() {
     if (this.rafId !== null) cancelAnimationFrame(this.rafId);
     this.rafId = null;
+    this.unsubPeaks?.();
+    this.unsubPeaks = null;
   }
 
   hitTest(x: number, y: number): HitResult {
@@ -203,7 +210,7 @@ export class TimelineCanvas {
       for (const clipId of t.timelineClips) {
         const c = project.clips[clipId];
         if (!c) continue;
-        drawClip(ctx, c, t, top, zoomX, scrollX, c.id === selectedClipId, accent2);
+        drawClip(ctx, c, t, top, zoomX, scrollX, c.id === selectedClipId, accent2, project.meta.bpm);
       }
     }
     ctx.restore();
@@ -297,6 +304,7 @@ function drawClip(
   scrollX: number,
   selected: boolean,
   selColor: string,
+  bpm: number,
 ) {
   const x0 = beatToX(clip.startBeat, zoomX, scrollX);
   const x1 = beatToX(clip.startBeat + clip.lengthBeats, zoomX, scrollX);
@@ -325,12 +333,110 @@ function drawClip(
   ctx.textBaseline = "middle";
   ctx.fillText(clip.name, x0 + 4, y + 6);
 
+  // content per type
+  if (clip.type === "audio") {
+    drawAudioWaveform(ctx, clip, x0, y + 14, w, h - 18, zoomX, bpm);
+  } else if (clip.type === "midi") {
+    drawMidiNotes(ctx, clip, x0, y + 14, w, h - 18);
+  } else if (clip.type === "pattern") {
+    drawPatternDots(ctx, clip, x0, y + 14, w, h - 18);
+  }
+
   // type label
   ctx.fillStyle = "rgba(255,255,255,0.4)";
   ctx.font = "9px Inter, system-ui";
   ctx.fillText(clip.type, x0 + 4, y + h - 8);
 
   ctx.restore();
+}
+
+function drawAudioWaveform(
+  ctx: CanvasRenderingContext2D,
+  clip: import("@/model/clip").AudioClip,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  zoomX: number,
+  bpm: number,
+) {
+  if (!clip.sampleId) return;
+  let peaks = getPeaksSync(clip.sampleId);
+  if (!peaks) {
+    void getPeaks(clip.sampleId);
+    ctx.fillStyle = "rgba(255,255,255,0.05)";
+    ctx.fillRect(x, y + h / 2 - 1, w, 2);
+    return;
+  }
+  const samplesPerBeat = (peaks.sampleRate * beatsToSeconds(1, bpm));
+  const samplesPerPx = samplesPerBeat / zoomX;
+  const lvl = pickLevel(peaks, samplesPerPx);
+  if (!lvl) return;
+
+  const center = y + h / 2;
+  ctx.strokeStyle = "rgba(255,255,255,0.6)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  const totalBuckets = lvl.min.length;
+  for (let px = 0; px < w; px++) {
+    const t = px / w;
+    const bucket = Math.floor(t * totalBuckets);
+    const mn = lvl.min[bucket] ?? 0;
+    const mx = lvl.max[bucket] ?? 0;
+    const cx = x + px + 0.5;
+    ctx.moveTo(cx, center + mn * (h / 2 - 1));
+    ctx.lineTo(cx, center + mx * (h / 2 - 1));
+  }
+  ctx.stroke();
+}
+
+function drawMidiNotes(
+  ctx: CanvasRenderingContext2D,
+  clip: import("@/model/clip").MidiClip,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+) {
+  if (clip.notes.length === 0) return;
+  let lo = 127;
+  let hi = 0;
+  for (const n of clip.notes) {
+    if (n.pitch < lo) lo = n.pitch;
+    if (n.pitch > hi) hi = n.pitch;
+  }
+  const range = Math.max(1, hi - lo + 1);
+  ctx.fillStyle = "rgba(255,255,255,0.7)";
+  for (const n of clip.notes) {
+    const nx = x + (n.startBeat / clip.lengthBeats) * w;
+    const nw = Math.max(1, (n.lengthBeats / clip.lengthBeats) * w);
+    const ny = y + (1 - (n.pitch - lo + 1) / range) * (h - 2);
+    ctx.fillRect(nx, ny, nw, 2);
+  }
+}
+
+function drawPatternDots(
+  ctx: CanvasRenderingContext2D,
+  clip: import("@/model/clip").PatternClip,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+) {
+  const rows = clip.steps.length;
+  const cellH = h / rows;
+  ctx.fillStyle = "rgba(255,255,255,0.8)";
+  for (let r = 0; r < rows; r++) {
+    const row = clip.steps[r];
+    if (!row) continue;
+    for (let st = 0; st < row.length; st++) {
+      const cell = row[st];
+      if (!cell?.on) continue;
+      const cx = x + (st / row.length) * w + 1;
+      const cw = Math.max(1, w / row.length - 2);
+      ctx.fillRect(cx, y + r * cellH + cellH / 2, cw, 1.5);
+    }
+  }
 }
 
 // re-export for hit testing in handlers

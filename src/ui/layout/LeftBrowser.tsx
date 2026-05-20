@@ -1,4 +1,8 @@
+import { useEffect, useRef, useState } from "react";
 import { useUiStore, type LeftTab } from "@/state/uiStore";
+import { listSamples, putSample, type SampleMeta } from "@/storage/opfs";
+import { preloadPeaks } from "@/storage/peakCache";
+import { engine } from "@/audio/engine";
 import s from "./LeftBrowser.module.css";
 
 const TABS: { id: LeftTab; label: string }[] = [
@@ -36,10 +40,66 @@ export function LeftBrowser() {
 }
 
 function SamplesPanel() {
+  const [samples, setSamples] = useState<SampleMeta[]>([]);
+  const fileInput = useRef<HTMLInputElement | null>(null);
+  const showToast = useUiStore((st) => st.showToast);
+
+  useEffect(() => {
+    void listSamples().then(setSamples);
+  }, []);
+
+  const onPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    await engine.init();
+    for (const f of Array.from(files)) {
+      try {
+        const id = await putSample(f, f.name);
+        void preloadPeaks(id);
+        showToast(`임포트: ${f.name}`, "success");
+      } catch {
+        showToast(`실패: ${f.name}`, "error");
+      }
+    }
+    setSamples(await listSamples());
+    if (fileInput.current) fileInput.current.value = "";
+  };
+
+  const startDrag = (e: React.DragEvent<HTMLDivElement>, id: string) => {
+    e.dataTransfer.setData("application/x-flowdaw-sample", id);
+    e.dataTransfer.effectAllowed = "copy";
+  };
+
   return (
     <>
       <div className={s.section}>가져온 샘플</div>
-      <div className={s.placeholder}>샘플이 비어있습니다</div>
+      {samples.length === 0 ? (
+        <div className={s.placeholder}>샘플이 비어있습니다</div>
+      ) : (
+        samples.map((sm) => (
+          <div
+            key={sm.id}
+            className={s.item}
+            draggable
+            onDragStart={(e) => startDrag(e, sm.id)}
+            title={`${sm.name}\n${sm.duration.toFixed(2)}s · ${Math.round(sm.size / 1024)} KB`}
+          >
+            <span className={s.name}>{sm.name || sm.id.slice(0, 8)}</span>
+            <span className={s.meta}>{sm.duration ? sm.duration.toFixed(1) + "s" : ""}</span>
+          </div>
+        ))
+      )}
+      <input
+        ref={fileInput}
+        type="file"
+        accept="audio/*"
+        multiple
+        style={{ display: "none" }}
+        onChange={onPick}
+      />
+      <div className={s.upload} onClick={() => fileInput.current?.click()}>
+        + 오디오 파일 가져오기
+      </div>
     </>
   );
 }
