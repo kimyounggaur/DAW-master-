@@ -2,6 +2,7 @@ import { engine } from "./engine";
 import { addProducer } from "./scheduler";
 import { useProjectStore } from "@/state/projectStore";
 import { useTransportStore } from "@/state/transportStore";
+import { useLauncherStore } from "@/state/launcherStore";
 import { getOrCreateInstrument } from "./instruments/hosting";
 import { getOrCreateTrackNode } from "./tracks/trackGraph";
 
@@ -28,6 +29,7 @@ export function installClipScheduler(): Cleanup {
     const transport = useTransportStore.getState();
     const loop = transport.loop;
 
+    const launcher = useLauncherStore.getState();
     for (const track of project.tracks) {
       // timeline clips
       for (const clipId of track.timelineClips) {
@@ -35,7 +37,26 @@ export function installClipScheduler(): Cleanup {
         if (!clip) continue;
         scheduleClipEvents(track.id, clip, fromBeat, toBeat, beatToCtxTime, "timeline", loop);
       }
-      // launcher: only the active slot (if set in transport state? Phase 1: timelineClips drive)
+      // launcher: apply pending launch if crossing launchAt
+      const pending = launcher.pending[track.id];
+      if (pending && pending.launchAtBeat >= fromBeat && pending.launchAtBeat < toBeat) {
+        launcher.setActive(track.id, pending.clipId);
+        launcher.setPending(track.id, null);
+      }
+      const activeClipId = launcher.active[track.id];
+      if (activeClipId) {
+        const clip = project.clips[activeClipId];
+        if (clip) {
+          // loop the launcher clip continuously
+          const len = clip.lengthBeats;
+          const wrappedClip = {
+            ...clip,
+            startBeat: Math.floor(fromBeat / len) * len,
+            id: clip.id + ":launcher",
+          };
+          scheduleClipEvents(track.id, wrappedClip as typeof clip, fromBeat, toBeat, beatToCtxTime, "launcher", loop);
+        }
+      }
     }
   });
   return unsub;
