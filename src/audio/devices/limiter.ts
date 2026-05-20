@@ -5,8 +5,8 @@ const PARAMS: Param[] = [
   { id: "threshold", label: "Threshold", min: -24, max: 0, default: -1, scale: "linear", unit: "dB" },
 ];
 
-export function createLimiter(): AudioDevice {
-  const ctx = engine.ctx;
+export function createLimiter(ctxOverride?: BaseAudioContext): AudioDevice {
+  const ctx = (ctxOverride ?? engine.ctx) as AudioContext;
   if (!ctx) throw new Error("engine not ready");
   const input = ctx.createGain();
   const output = ctx.createGain();

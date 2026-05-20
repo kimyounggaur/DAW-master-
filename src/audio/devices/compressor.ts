@@ -10,8 +10,8 @@ const PARAMS: Param[] = [
   { id: "makeup", label: "Makeup", min: 0, max: 24, default: 0, scale: "linear", unit: "dB" },
 ];
 
-export function createCompressor(): AudioDevice {
-  const ctx = engine.ctx;
+export function createCompressor(ctxOverride?: BaseAudioContext): AudioDevice {
+  const ctx = (ctxOverride ?? engine.ctx) as AudioContext;
   if (!ctx) throw new Error("engine not ready");
   const input = ctx.createGain();
   const output = ctx.createGain();

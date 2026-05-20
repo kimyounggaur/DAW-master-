@@ -11,8 +11,8 @@ const PARAMS: Param[] = [
   { id: "highGain", label: "High", min: -18, max: 18, default: 0, scale: "linear", unit: "dB" },
 ];
 
-export function createEq3(): AudioDevice {
-  const ctx = engine.ctx;
+export function createEq3(ctxOverride?: BaseAudioContext): AudioDevice {
+  const ctx = (ctxOverride ?? engine.ctx) as AudioContext;
   if (!ctx) throw new Error("engine not ready");
   const input = ctx.createGain();
   const output = ctx.createGain();

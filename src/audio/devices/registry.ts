@@ -5,7 +5,9 @@ import { createDelay } from "./delay";
 import { createReverb } from "./reverb";
 import { createLimiter } from "./limiter";
 
-const FACTORIES: Record<string, () => AudioDevice> = {
+type Factory = (ctx?: BaseAudioContext) => AudioDevice;
+
+const FACTORIES: Record<string, Factory> = {
   eq3: createEq3,
   compressor: createCompressor,
   delay: createDelay,
@@ -23,8 +25,8 @@ export const DEVICE_LABELS: Record<string, string> = {
   limiter: "Limiter",
 };
 
-export function createDevice(kind: string): AudioDevice | null {
+export function createDevice(kind: string, ctx?: BaseAudioContext): AudioDevice | null {
   const f = FACTORIES[kind];
   if (!f) return null;
-  return f();
+  return f(ctx);
 }

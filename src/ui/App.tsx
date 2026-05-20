@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { ExportDialog } from "./common/ExportDialog";
 import { TopBar } from "./layout/TopBar";
 import { LeftBrowser } from "./layout/LeftBrowser";
 import { RightInspector } from "./layout/RightInspector";
@@ -21,6 +22,15 @@ import s from "./App.module.css";
 export function App() {
   const toast = useUiStore((st) => st.toast);
   const bottomVisible = useUiStore((st) => st.bottomVisible);
+  const [exportOpen, setExportOpen] = useState(false);
+
+  useEffect(() => {
+    const btn = document.getElementById("export-btn");
+    if (!btn) return;
+    const onClick = () => setExportOpen(true);
+    btn.addEventListener("click", onClick);
+    return () => btn.removeEventListener("click", onClick);
+  }, []);
 
   useEffect(() => {
     void loadSampleMetadata();
@@ -98,6 +108,7 @@ export function App() {
         <BottomPanel />
       </div>
       {toast && <div className={`${s.toast} ${toastClass}`}>{toast.message}</div>}
+      <ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} />
     </div>
   );
 }

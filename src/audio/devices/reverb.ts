@@ -23,8 +23,8 @@ function generateIR(ctx: AudioContext, duration: number, decay: number, brightne
   return ir;
 }
 
-export function createReverb(): AudioDevice {
-  const ctx = engine.ctx;
+export function createReverb(ctxOverride?: BaseAudioContext): AudioDevice {
+  const ctx = (ctxOverride ?? engine.ctx) as AudioContext;
   if (!ctx) throw new Error("engine not ready");
   const input = ctx.createGain();
   const output = ctx.createGain();

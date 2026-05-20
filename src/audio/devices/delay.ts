@@ -10,8 +10,8 @@ const PARAMS: Param[] = [
   { id: "mix", label: "Mix", min: 0, max: 1, default: 0.3, scale: "linear" },
 ];
 
-export function createDelay(): AudioDevice {
-  const ctx = engine.ctx;
+export function createDelay(ctxOverride?: BaseAudioContext): AudioDevice {
+  const ctx = (ctxOverride ?? engine.ctx) as AudioContext;
   if (!ctx) throw new Error("engine not ready");
   const input = ctx.createGain();
   const output = ctx.createGain();
