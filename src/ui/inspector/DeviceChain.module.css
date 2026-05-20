@@ -1,0 +1,110 @@
+.root {
+  padding: var(--space-2);
+  height: 100%;
+  overflow: auto;
+}
+.empty {
+  color: var(--fg-2);
+  text-align: center;
+  padding: var(--space-4);
+}
+.rows {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+  min-width: 280px;
+}
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+  gap: var(--space-2);
+}
+.cardTitle {
+  font-weight: 600;
+}
+.cardActions {
+  display: flex;
+  gap: 4px;
+}
+.iconBtn {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--fg-1);
+  font-size: 11px;
+}
+.iconBtn:hover { color: var(--fg-0); background: var(--bg-3); }
+.iconBtn.active { color: var(--accent); border-color: var(--accent); }
+.iconBtn.danger { color: var(--danger); }
+
+.params {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: var(--space-2);
+}
+.param {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  font-size: 10px;
+  color: var(--fg-2);
+}
+.knob {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: ns-resize;
+}
+.knob::after {
+  content: "";
+  position: absolute;
+  width: 2px;
+  height: 12px;
+  background: var(--accent);
+  left: 50%;
+  top: 4px;
+  transform-origin: 1px 14px;
+}
+.value {
+  color: var(--fg-1);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+}
+
+.add {
+  display: flex;
+  gap: 4px;
+  margin-top: var(--space-2);
+  flex-wrap: wrap;
+}
+.addBtn {
+  background: var(--bg-2);
+  color: var(--fg-1);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.addBtn:hover {
+  border-color: var(--accent);
+  color: var(--fg-0);
+}

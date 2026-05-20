@@ -13,6 +13,7 @@ import { installMetronome } from "@/audio/metronome";
 import { subscribeMixerSync } from "@/audio/tracks/trackGraph";
 import { installClipScheduler } from "@/audio/clipScheduler";
 import { ensureAllInstruments } from "@/audio/instruments/hosting";
+import { subscribeDeviceSync } from "@/audio/devices/chain";
 import s from "./App.module.css";
 
 export function App() {
@@ -23,6 +24,7 @@ export function App() {
     let stop: (() => void) | null = null;
     let stopMetronome: (() => void) | null = null;
     const stopMixer = subscribeMixerSync();
+    const stopDevices = subscribeDeviceSync();
     let stopClipScheduler: (() => void) | null = null;
     const unsub = engine.onReady(() => {
       stop = startTransportClock();
@@ -43,6 +45,7 @@ export function App() {
       stopMetronome?.();
       stopScheduler();
       stopMixer();
+      stopDevices();
       stopClipScheduler?.();
     };
   }, []);

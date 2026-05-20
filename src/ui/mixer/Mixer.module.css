@@ -1,0 +1,125 @@
+.root {
+  display: flex;
+  height: 100%;
+  overflow-x: auto;
+  background: var(--bg-1);
+  padding: var(--space-2);
+  gap: var(--space-2);
+}
+.strip {
+  width: 80px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: var(--space-2);
+  flex-shrink: 0;
+}
+.strip.master {
+  border-color: var(--accent);
+  background: linear-gradient(180deg, rgba(255,140,58,0.08), var(--bg-2));
+}
+.strip.selected {
+  outline: 2px solid var(--accent-2);
+  outline-offset: -2px;
+}
+.colorBand {
+  height: 4px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin-bottom: 4px;
+}
+.name {
+  font-size: 11px;
+  color: var(--fg-0);
+  text-align: center;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.inserts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+.insertSlot {
+  font-size: 9px;
+  background: var(--bg-1);
+  color: var(--fg-1);
+  padding: 3px 4px;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.insertSlot.empty {
+  color: var(--fg-2);
+  border-style: dashed;
+  cursor: pointer;
+}
+.pan {
+  margin: 2px 0;
+}
+.faderArea {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 4px;
+  min-height: 200px;
+  padding: 4px 0;
+}
+.faderTrack {
+  position: relative;
+  width: 12px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: ns-resize;
+}
+.faderThumb {
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.faderValue {
+  font-size: 9px;
+  color: var(--fg-2);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.ms {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  margin-top: 4px;
+}
+.msBtn {
+  font-size: 9px;
+  width: 22px;
+  height: 18px;
+  border: 1px solid var(--border);
+  background: var(--bg-1);
+  color: var(--fg-1);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.msBtn.on {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.msBtn.solo.on {
+  background: var(--accent-2);
+  color: #000;
+  border-color: var(--accent-2);
+}
