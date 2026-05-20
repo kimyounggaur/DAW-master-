@@ -361,7 +361,7 @@ function drawAudioWaveform(
   bpm: number,
 ) {
   if (!clip.sampleId) return;
-  let peaks = getPeaksSync(clip.sampleId);
+  const peaks = getPeaksSync(clip.sampleId);
   if (!peaks) {
     void getPeaks(clip.sampleId);
     ctx.fillStyle = "rgba(255,255,255,0.05)";

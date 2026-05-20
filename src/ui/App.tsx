@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ExportDialog } from "./common/ExportDialog";
+import { Onboarding } from "./onboarding/Onboarding";
 import { TopBar } from "./layout/TopBar";
 import { LeftBrowser } from "./layout/LeftBrowser";
 import { RightInspector } from "./layout/RightInspector";
@@ -152,6 +153,7 @@ export function App() {
       </div>
       {toast && <div className={`${s.toast} ${toastClass}`}>{toast.message}</div>}
       <ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} />
+      <Onboarding />
     </div>
   );
 }

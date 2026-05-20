@@ -142,10 +142,46 @@ function EffectsPanel() {
 }
 
 function TemplatesPanel() {
+  const showToast = useUiStore((st) => st.showToast);
   return (
     <>
       <div className={s.section}>템플릿</div>
-      <div className={s.placeholder}>S21에서 채워집니다</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <TemplateRow id="lofi" name="Lo-fi Beat" desc="90 BPM A minor" onLoad={showToast} />
+        <TemplateRow id="pop" name="Pop Loop" desc="110 BPM C major" onLoad={showToast} />
+        <TemplateRow id="edm" name="EDM Drop" desc="128 BPM F minor" onLoad={showToast} />
+        <TemplateRow id="kpop" name="K-Pop Verse" desc="120 BPM G minor" onLoad={showToast} />
+        <TemplateRow id="empty" name="Empty" desc="비어있는 프로젝트" onLoad={showToast} />
+      </div>
     </>
+  );
+}
+
+function TemplateRow({
+  id,
+  name,
+  desc,
+  onLoad,
+}: {
+  id: import("@/ui/onboarding/templates").TemplateKind;
+  name: string;
+  desc: string;
+  onLoad: (msg: string, kind?: "info" | "error" | "success") => void;
+}) {
+  return (
+    <div
+      className={s.item}
+      onClick={async () => {
+        const { buildTemplate } = await import("@/ui/onboarding/templates");
+        const { useProjectStore: ps } = await import("@/state/projectStore");
+        if (id === "empty") ps.getState().createEmptyProject();
+        else ps.getState().loadProject(buildTemplate(id));
+        onLoad(`${name} 로드 완료`, "success");
+      }}
+      title={desc}
+    >
+      <span className={s.name}>{name}</span>
+      <span className={s.meta}>{desc}</span>
+    </div>
   );
 }
