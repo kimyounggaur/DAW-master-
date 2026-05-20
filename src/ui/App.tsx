@@ -11,6 +11,8 @@ import { startTransportClock, stopTransportClock } from "@/audio/transport";
 import { startScheduler, stopScheduler, resyncSchedule } from "@/audio/scheduler";
 import { installMetronome } from "@/audio/metronome";
 import { subscribeMixerSync } from "@/audio/tracks/trackGraph";
+import { installClipScheduler } from "@/audio/clipScheduler";
+import { ensureAllInstruments } from "@/audio/instruments/hosting";
 import s from "./App.module.css";
 
 export function App() {
@@ -21,9 +23,12 @@ export function App() {
     let stop: (() => void) | null = null;
     let stopMetronome: (() => void) | null = null;
     const stopMixer = subscribeMixerSync();
+    let stopClipScheduler: (() => void) | null = null;
     const unsub = engine.onReady(() => {
       stop = startTransportClock();
       stopMetronome = installMetronome();
+      stopClipScheduler = installClipScheduler();
+      ensureAllInstruments();
       startScheduler();
     });
     const unsubTransport = useTransportStore.subscribe((state, prev) => {
@@ -38,6 +43,7 @@ export function App() {
       stopMetronome?.();
       stopScheduler();
       stopMixer();
+      stopClipScheduler?.();
     };
   }, []);
 

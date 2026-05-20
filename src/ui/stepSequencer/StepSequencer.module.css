@@ -1,0 +1,85 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--space-2);
+  gap: var(--space-2);
+  font-size: 12px;
+}
+.header {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  color: var(--fg-1);
+}
+.swing {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.grid {
+  display: grid;
+  grid-template-columns: 110px repeat(16, 1fr);
+  gap: 2px;
+  align-items: stretch;
+}
+.gridWide {
+  grid-template-columns: 110px repeat(32, 1fr);
+}
+.rowLabel {
+  display: flex;
+  align-items: center;
+  padding: 2px 6px;
+  font-size: 11px;
+  color: var(--fg-1);
+}
+.cell {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  height: 24px;
+  cursor: pointer;
+  position: relative;
+}
+.cell:hover {
+  background: var(--bg-3);
+}
+.cell.on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.cell.beatStart {
+  border-left-color: var(--fg-2);
+}
+.cell.playing::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  outline: 2px solid var(--accent-2);
+  outline-offset: -2px;
+  pointer-events: none;
+}
+
+.velocityRow {
+  display: grid;
+  grid-template-columns: 110px repeat(16, 1fr);
+  gap: 2px;
+  margin-top: var(--space-2);
+}
+.velocityRowWide {
+  grid-template-columns: 110px repeat(32, 1fr);
+}
+.velBar {
+  background: var(--bg-2);
+  height: 32px;
+  position: relative;
+  border-radius: 2px;
+}
+.velFill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--accent-2);
+  border-radius: 2px;
+}
